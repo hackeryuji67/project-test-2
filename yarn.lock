@@ -3291,6 +3291,14 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
+libsignal-node@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/libsignal-node/-/libsignal-node-2.0.1.tgz#83edd49ff1b7091c36e42c6769dc4025c69e70d5"
+  integrity sha512-wmEEUNX6ccTqZk4JtjhLGVtW7A4ARIjEJebgulVk4ETkLmCPkYJvJ/MAURv3pIrdX7tYY40C5zUq+Efl3ec9qA==
+  dependencies:
+    curve25519-js "^0.0.4"
+    protobufjs "6.8.8"
+
 "libsignal@https://github.com/adiwajshing/libsignal-node.git":
   version "2.0.1"
   resolved "https://github.com/adiwajshing/libsignal-node.git#11dbd962ea108187c79a7c46fe4d6f790e23da97"
