@@ -4,12 +4,11 @@ import EventEmitter from 'events'
 import TypedEventEmitter from 'typed-emitter'
 import Baileys, { DisconnectReason, fetchLatestBaileysVersion, ParticipantAction, proto } from '@adiwajshing/baileys'
 import P from 'pino'
-import { connect } from 'mongoose'
+import { connect, set } from 'mongoose'
 import { Boom } from '@hapi/boom'
 import qr from 'qr-image'
 import { Utils } from '../lib'
-import { Database, Contact, Message, Server, AuthenticationFromDatabase } from '.'
-import { Pokemon } from '../Database'
+import { Database, Contact, Message, AuthenticationFromDatabase, Server } from '.'
 import { IConfig, client, IEvent, ICall } from '../Types'
 
 export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>) {
@@ -18,31 +17,32 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
         super()
         Config()
         this.config = {
-            name: process.env.BOT_NAME || '46',
-            session: process.env.SESSION || 'Wow',
-            prefix: process.env.PREFIX || '#',
+            name: process.env.BOT_NAME || 'Bot',
+            session: process.env.SESSION || 'SESSION',
+            prefix: process.env.PREFIX || ':',
+            chatBotUrl: process.env.CHAT_BOT_URL || '',
             mods: (process.env.MODS || '').split(', ').map((user) => `${user}@s.whatsapp.net`),
-            casinoGroup: '120363063796106542@g.us',
-            gkey: 'AIzaSyDMbI3nvmQUrfjoCJYLS69Lej1hSXQjnWIEcx',
-            adminsGroup: '120363048373881290@g.us',           
-            supportGroups: [],
-            chatBotUrl: 'http://api.brainshop.ai/get?bid=173120&key=tfwpLdmvFHd7ymi4&uid=[uid]&msg=[msg]',
             PORT: Number(process.env.PORT || 3000)
         }
         new Server(this)
     }
 
     public start = async (): Promise<client> => {
-        await connect('')
+        if (!process.env.MONGO_URI) {
+            throw new Error('No MongoDB URI provided')
+        }
+        set('strictQuery', false)
+        await connect(process.env.MONGO_URI)
         this.log('Connected to the Database')
         const { useDatabaseAuth } = new AuthenticationFromDatabase(this.config.session)
         const { saveState, state, clearState } = await useDatabaseAuth()
+        const { version } = await fetchLatestBaileysVersion()
         this.client = Baileys({
-            version: (await fetchLatestBaileysVersion()).version,
+            version,
             printQRInTerminal: true,
             auth: state,
             logger: P({ level: 'fatal' }),
-            browser: ['Asuna:Reborn🚀', 'fatal', '4.0.0'],
+            browser: ['Celestic', 'fatal', '4.0.0'],
             getMessage: async (key) => {
                 return {
                     conversation: ''
@@ -57,8 +57,7 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
         this.ev.on('contacts.update', async (contacts) => await this.contact.saveContacts(contacts))
         this.ev.on('messages.upsert', async ({ messages }) => {
             const M = new Message(messages[0], this)
-            if ((M.type === 'protocolMessage' || M.type === 'senderKeyDistributionMessage') && M.content === '')
-                return void null
+            if (M.type === 'protocolMessage' || M.type === 'senderKeyDistributionMessage') return void null
             if (M.stubType && M.stubParameters) {
                 const emitParticipantsUpdate = (action: ParticipantAction): boolean =>
                     this.emit('participants_update', {
@@ -115,7 +114,6 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
             if (connection === 'open') {
                 this.condition = 'connected'
                 this.log('Connected to WhatsApp')
-                this.emit('open')
             }
         })
         this.ev.on('creds.update', saveState)
@@ -130,23 +128,20 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
 
     public contact = new Contact(this)
 
-    public getAllGroups = async (): Promise<string[]> => Object.keys(await this.groupFetchAllParticipating())
-
     public correctJid = (jid: string): string => `${jid.split('@')[0].split(':')[0]}@s.whatsapp.net`
 
     public assets = new Map<string, Buffer>()
 
     public log = (text: string, error: boolean = false): void =>
-        console.log(chalk[error ? 'red' : 'blue']('[ASUNA]'), chalk[error ? 'redBright' : 'greenBright'](text))
+        console.log(
+            chalk[error ? 'red' : 'blue'](`[${this.config.name.toUpperCase()}]`),
+            chalk[error ? 'redBright' : 'greenBright'](text)
+        )
 
     public QR!: Buffer
 
     public condition!: 'connected' | 'connecting' | 'logged_out'
 
-    public appPatch!: client['appPatch']
-    public assertSessions!: client['assertSessions']
-    public authState!: client['authState']
-    public chatModify!: client['chatModify']
     public end!: client['end']
     public ev!: client['ev']
     public fetchBlocklist!: client['fetchBlocklist']
@@ -203,6 +198,14 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
     public waitForSocketOpen!: client['waitForSocketOpen']
     public waitForConnectionUpdate!: client['waitForConnectionUpdate']
     public waUploadToServer!: client['waUploadToServer']
+    public getPrivacyTokens!: client['getPrivacyTokens']
+    public assertSessions!: client['assertSessions']
+    public processingMutex!: client['processingMutex']
+    public appPatch!: client['appPatch']
+    public authState!: client['authState']
+    public upsertMessage!: client['upsertMessage']
+    public updateProfileStatus!: client['updateProfileStatus']
+    public chatModify!: client['chatModify']
 }
 
 type Events = {
