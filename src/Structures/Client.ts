@@ -53,7 +53,7 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
                     conversation: ''
                 }
             },
-            msgRetryCounterMap: {},
+           
             markOnlineOnConnect: false
         })
         for (const method of Object.keys(this.client))
