@@ -18,8 +18,7 @@ export default class extends BaseCommand {
             })).filter((command) => command.data.config.category !== 'dev')
             const { nsfw } = await this.client.DB.getGroup(M.from)
             if (!nsfw) commands = commands.filter(({ data }) => data.config.category !== 'nsfw')
-            let text = `👋🏻 (💙ω💙) Konichiwa! *@${M.sender.jid.split('@')[0]}*, I'm ${
-                this.client.config.name
+            let text = `👋🏻 (💙ω💙) Konichiwa! *@${M.sender.jid.split('@')[0]}*, I AM celestic botto by team celestic 
             }\nMy prefix is - "${this.client.config.prefix}"\n\nThe usable commands are listed below.`
             const categories: string[] = []
             for (const command of commands) {
