@@ -1,4 +1,4 @@
-import { YT } from '../../lib'
+
 import { Message, Command, BaseCommand } from '../../Structures'
 
 @Command('yta', {
