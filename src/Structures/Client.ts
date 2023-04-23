@@ -9,6 +9,7 @@ import { Boom } from '@hapi/boom'
 import qr from 'qr-image'
 import { Utils } from '../lib'
 import { Database, Contact, Message, AuthenticationFromDatabase, Server } from '.'
+import { Pokemon } from '../Database'
 import { IConfig, client, IEvent, ICall } from '../Types'
 
 export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>) {
@@ -21,6 +22,10 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
             session: process.env.SESSION || 'SESSION',
             prefix: process.env.PREFIX || ':',
             chatBotUrl: process.env.CHAT_BOT_URL || '',
+            casinoGroup: '120363063796106542@g.us',
+            gkey: 'AIzaSyDMbI3nvmQUrfjoCJYLS69Lej1hSXQjnWIEcx',
+            adminsGroup: '120363048373881290@g.us',           
+            supportGroups: [],
             mods: (process.env.MODS || '').split(', ').map((user) => `${user}@s.whatsapp.net`),
             PORT: Number(process.env.PORT || 3000)
         }
@@ -114,6 +119,7 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
             if (connection === 'open') {
                 this.condition = 'connected'
                 this.log('Connected to WhatsApp')
+                this.emit('open')
             }
         })
         this.ev.on('creds.update', saveState)
@@ -127,6 +133,8 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
     public config: IConfig
 
     public contact = new Contact(this)
+    
+    public getAllGroups = async (): Promise<string[]> => Object.keys(await this.groupFetchAllParticipating())
 
     public correctJid = (jid: string): string => `${jid.split('@')[0].split(':')[0]}@s.whatsapp.net`
 
