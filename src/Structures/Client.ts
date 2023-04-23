@@ -186,7 +186,7 @@ export class Client extends (EventEmitter as new () => TypedEventEmitter<Events>
     public refreshMediaConn!: client['refreshMediaConn']
     public relayMessage!: client['relayMessage']
     public resyncAppState!: client['resyncAppState']
-    public resyncMainAppState!: client['resyncMainAppState']
+    
     public sendMessageAck!: client['sendMessageAck']
     public sendNode!: client['sendNode']
     public sendRawMessage!: client['sendRawMessage']
