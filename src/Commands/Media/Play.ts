@@ -1,4 +1,4 @@
-import { YT } from '../../lib'
+
 import { Command, BaseCommand, Message } from '../../Structures'
 import { IArgs, YT_Search } from '../../Types'
 
